@@ -1,11 +1,11 @@
 struct Task{
-    pub title: String,
-    pub task: String,
-    pub completed: bool
+    title: String,
+    task: String,
+    completed: bool
 }
 
 impl Task{
-    pub fn new(title: String, task: String) -> Task{
+    fn new(title: String, task: String) -> Task{
         Task{title: title, task: task, completed: false}
     }
 }
@@ -21,7 +21,9 @@ impl TaskList{
     }
 
     pub fn add_task(&mut self, title: &str, task: &str){
-        if !(self.exist(title)){
+        if title == "" || task == "" {
+            println!("Syntax error, the right way for add a task is new_task/title/task.")
+        }else if !(self.get_index(title) != self.vect.len()){
             self.vect.push(Task::new(title.to_string(), task.to_string()));
             println!("The task {title} has been add to the task list.");
         }else{
@@ -29,13 +31,13 @@ impl TaskList{
         }
     }
 
-    pub fn exist(&self, title: &str) -> bool{
-        for task in self.vect.iter(){
+    pub fn get_index(&self, title: &str) -> usize{
+        for (i, task) in self.vect.iter().enumerate(){
             if task.title == title{
-                return true;
+                return i;
             }
         }
-        return false;
+        return self.vect.len();
     }
 
     pub fn display_task(&self){
@@ -48,6 +50,9 @@ impl TaskList{
             }
             println!("{s}");
         }
+        if self.vect.len() == 0{
+            println!("No task yet.");
+        }
     }
 
     pub fn remove_task(&mut self, task_to_remove: &str){
@@ -59,5 +64,20 @@ impl TaskList{
             }
         }
         println!("The task {task_to_remove} don't already exists.");
+    }
+
+    pub fn change_state(&mut self, title: &str){
+        let i = self.get_index(title);
+        if i == self.vect.len() {
+            println!("The task {title} don't already exists.");
+        }else{
+            if self.vect[i].completed{
+                println!("The task {title} is now incomplete.");
+                self.vect[i].completed = false;
+            }else{
+                println!("The task {title} is now complete.");
+                self.vect[i].completed = true;
+            }
+        }   
     }
 }

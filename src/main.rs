@@ -17,10 +17,11 @@ fn ask_for_command(task_vec : &mut TaskList){
     let title: &str = splited_command.next().unwrap_or("");
     let task: &str = splited_command.next().unwrap_or("");
     match type_command {
-        "new_task" if task != "\n" => task_vec.add_task(title, task),
+        "new_task" => task_vec.add_task(title, task),
         "display" => task_vec.display_task(),
         "remove" => task_vec.remove_task(title),
-        _ if type_command != "\n" => println!("Unknown command"),
+        "change" => task_vec.change_state(title),
+        _ if type_command != "" => println!("Unknown command"),
         _ => {},
     }
 }
