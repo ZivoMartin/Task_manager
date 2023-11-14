@@ -9,7 +9,7 @@ fn main() {
     }
 }
 
-fn ask_for_command(task_vec : &mut TaskList){
+fn ask_for_command(task_vec : &mut TaskList){ //Je suis sur windows
     let mut command = String::new();
     io::stdin().read_line(&mut command).expect("Failed to read command");
     command.pop();
