@@ -3,7 +3,7 @@ mod task;
 use crate::task::TaskList;
 
 fn main() {
-    let mut task_vec = TaskList::new();
+    let mut task_vec = TaskList::new("./src/save_task.txt");
     loop{
         ask_for_command(&mut task_vec);
     }
@@ -12,6 +12,7 @@ fn main() {
 fn ask_for_command(task_vec : &mut TaskList){
     let mut command = String::new();
     io::stdin().read_line(&mut command).expect("Failed to read command");
+    command.pop();
     let mut splited_command = command.split('/');
     let type_command: &str = splited_command.next().unwrap_or("{command}");
     let title: &str = splited_command.next().unwrap_or("");

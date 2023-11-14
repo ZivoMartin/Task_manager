@@ -1,3 +1,7 @@
+use std::fs;
+use std::fs::OpenOptions;
+use std::io::Write;
+
 struct Task{
     title: String,
     task: String,
@@ -11,19 +15,43 @@ impl Task{
 }
 
 pub struct TaskList{
-    vect: Vec::<Task>
+    vect: Vec::<Task>,
+    file_name: String
 }
 
 impl TaskList{
 
-    pub fn new() -> TaskList{
-        TaskList{vect: Vec::<Task>::new()}
+    pub fn new(file_name: &str) -> TaskList{
+        let mut task_vect = Vec::<Task>::new();
+        let tasks_in_file = fs::read_to_string(file_name);
+        match tasks_in_file {
+            Ok(content) => {
+                let mut lines: Vec<&str> = content.split('\n').collect();
+                lines.pop();
+                let mut i=0;
+                while i<lines.len(){
+                    task_vect.push(Task::new(lines[i].to_string(), lines[i+1].to_string()));
+                    i += 2;
+                }
+            }
+            Err(err) => {
+                eprintln!("Vos taches n'ont pas pue ètre lu correctement : {:?}", err);
+            }
+        }
+        TaskList{vect: task_vect, file_name: file_name.to_string()}
+        
     }
 
     pub fn add_task(&mut self, title: &str, task: &str){
         if title == "" || task == "" {
             println!("Syntax error, the right way for add a task is new_task/title/task.")
         }else if !(self.get_index(title) != self.vect.len()){
+            let mut fichier = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .create(true)
+            .open(self.file_name.clone());
+            let _result = writeln!(fichier, "{title}\n{task}\n");
             self.vect.push(Task::new(title.to_string(), task.to_string()));
             println!("The task {title} has been add to the task list.");
         }else{
