@@ -13,6 +13,16 @@ impl Task{
     fn new(title: String, task: String) -> Task{
         Task{title: title, task: task, completed: false}
     }
+
+    fn change_state(&mut self, display_the_change: bool){
+        if self.completed{
+            if display_the_change { println!("The task {} is now incomplete.", self.title)};
+            self.completed = false;
+        }else{
+            if display_the_change { println!("The task {} is now complete.", self.title)};
+            self.completed = true;
+        }
+    }
 }
 
 pub struct TaskList{
@@ -29,13 +39,15 @@ impl TaskList{
             Ok(content) => {
                 let mut lines: Vec<&str> = content.split('\n').collect();
                 lines.pop();
-                let mut i=0;
-                while i<lines.len(){
-                    task_vect.push(Task::new(lines[i].to_string(), lines[i+1].to_string()));
-                    i += 2;
+                for task in lines{
+                    let splited_task: Vec<&str> = task.split("|").collect();
+                    let mut task = Task::new(splited_task[0].to_string(), splited_task[1].to_string());
+                    if splited_task[2] == "true" {
+                        task.change_state(false);
+                    }
+                    task_vect.push(task);
                 }
-            }
-            Err(err) => {
+            }Err(err) => {
                 eprintln!("Failed to read your task list : {:?}", err);
             }
         }
@@ -50,7 +62,7 @@ impl TaskList{
             let result = OpenOptions::new().append(true).open(self.file_name.clone());
             match result{
                 Ok(mut fichier) => {
-                    let _ = fichier.write_all(format!("{}\n{}\n", title, task).as_bytes());
+                    let _ = fichier.write_all(format!("{}|{}|{}\n", title, task, false).as_bytes());
                 }
                 Err(e) => {
                     println!("The writting of the task has failed: {e}");
@@ -86,6 +98,7 @@ impl TaskList{
         for (i, task) in self.vect.iter().enumerate(){
             if task.title == task_to_remove {
                 self.vect.remove(i);
+                self.actualise_file();
                 println!("The task {task_to_remove} has been destroyed.");
                 return;
             }
@@ -93,18 +106,21 @@ impl TaskList{
         println!("The task {task_to_remove} don't already exists.");
     }
 
+    pub fn actualise_file(&self){
+        let mut new_text : String = String::new();
+        for task in &self.vect{
+            new_text.push_str(&format!("{}|{}|{}\n", task.title , task.task, task.completed));
+        }
+        let _result = fs::write(self.file_name.clone(), new_text.as_bytes());
+    }
+
     pub fn change_state(&mut self, title: &str){
         let i = self.get_index(title);
         if i == self.vect.len() {
             println!("The task {title} don't already exists.");
         }else{
-            if self.vect[i].completed{
-                println!("The task {title} is now incomplete.");
-                self.vect[i].completed = false;
-            }else{
-                println!("The task {title} is now complete.");
-                self.vect[i].completed = true;
-            }
+            self.vect[i].change_state(true);
+            self.actualise_file()
         }   
     }
 }

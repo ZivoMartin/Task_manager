@@ -13,7 +13,6 @@ fn ask_for_command(task_vec : &mut TaskList){
     let mut command = String::new();
     io::stdin().read_line(&mut command).expect("Failed to read command");
     command.pop();
-    command.pop();
     let mut splited_command : Vec<_>= command.split('/').collect();
     while splited_command.len() < 3{
         splited_command.push("");

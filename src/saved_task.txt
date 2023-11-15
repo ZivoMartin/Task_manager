@@ -1,4 +1,0 @@
-task1
-Reussir a faire quelque chose de propre
-task2
-Faire une interface graphique
