@@ -1,6 +1,7 @@
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;
+use std::path::PathBuf;
 
 struct Task{
     title: String,
@@ -16,7 +17,7 @@ impl Task{
 
 pub struct TaskList{
     vect: Vec::<Task>,
-    file_name: String
+    file_name: PathBuf
 }
 
 impl TaskList{
@@ -35,23 +36,26 @@ impl TaskList{
                 }
             }
             Err(err) => {
-                eprintln!("Vos taches n'ont pas pue ètre lu correctement : {:?}", err);
+                eprintln!("Failed to read your task list : {:?}", err);
             }
         }
-        TaskList{vect: task_vect, file_name: file_name.to_string()}
+        TaskList{vect: task_vect, file_name: PathBuf::from(file_name)}
         
     }
 
     pub fn add_task(&mut self, title: &str, task: &str){
         if title == "" || task == "" {
             println!("Syntax error, the right way for add a task is new_task/title/task.")
-        }else if !(self.get_index(title) != self.vect.len()){
-            let mut fichier = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .create(true)
-            .open(self.file_name.clone());
-            let _result = writeln!(fichier, "{title}\n{task}\n");
+        }else if self.get_index(title) == self.vect.len(){
+            let result = OpenOptions::new().append(true).open(self.file_name.clone());
+            match result{
+                Ok(mut fichier) => {
+                    let _ = fichier.write_all(format!("{}\n{}\n", title, task).as_bytes());
+                }
+                Err(e) => {
+                    println!("The writting of the task has failed: {e}");
+                }
+            }
             self.vect.push(Task::new(title.to_string(), task.to_string()));
             println!("The task {title} has been add to the task list.");
         }else{
@@ -69,15 +73,10 @@ impl TaskList{
     }
 
     pub fn display_task(&self){
-        for task in self.vect.iter() {
-            let mut s : String = format!("{}: {}    ", task.title, task.task);
-            if task.completed{
-                s += " complete.";
-            }else{
-                s += " incomplete.";
-            }
-            println!("{s}");
-        }
+        self.vect.iter().for_each(|task| {
+            let status = if task.completed { "complete" } else { "incomplete" };
+            println!("{}: {}    {}", task.title, task.task, status);
+        });
         if self.vect.len() == 0{
             println!("No task yet.");
         }
